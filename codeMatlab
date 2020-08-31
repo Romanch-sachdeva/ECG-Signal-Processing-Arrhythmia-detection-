@@ -1,43 +1,46 @@
 for demo = 1:2:3
-%Clear our variables
-clear ecg samplingrate corrected filtered1 peaks1 filtered2 peaks2 fresult
+%Clear our variables clear ecg samplingrate corrected filtered1 peaks1 filtered2 peaks2 fresult
 %Load data sample
-switch(demo)
-case 1,
-plotname = 'ecgdemodata1';
-load ecgdemodata1;
-case 3,
-plotname = 'ecgdemodata2';
-load ecgdemodata2;
+  switch(demo)
+  case 1,
+    plotname = 'ecgdemodata1';
+    load ecgdemodata1;
+  case 3,
+    plotname = 'ecgdemodata2';
+    load ecgdemodata2;
 end
 %Remove lower frequencies
 fresult=fft(ecg);
 fresult(1 : round(length(fresult)*5/samplingrate))=0;
 fresult(end - round(length(fresult)*5/samplingrate) : end)=0;
 corrected=real(ifft(fresult));
+
 %Filter - first pass
 WinSize = floor(samplingrate * 571 / 1000);
 if rem(WinSize,2)==0
-WinSize = WinSize+1;
+  WinSize = WinSize+1;
 end
 filtered1=ecgdemowinmax(corrected, WinSize);
+
 %Scale ecg
 peaks1=filtered1/(max(filtered1)/7);
+
 %Filter by threshold filter
 for data = 1:1:length(peaks1)
-if peaks1(data) < 4
-peaks1(data) = 0;
-else
-peaks1(data)=1;
-end
+  if peaks1(data) < 4
+    peaks1(data) = 0;
+  else
+    peaks1(data)=1;
+  end
 end
 positions=find(peaks1);
 distance=positions(2)-positions(1);
+
 %Returns minimum distance between two peaks
 for data=1:1:length(positions)-1
-if positions(data+1)-positions(data)<distance
-distance=positions(data+1)-positions(data);
-end
+  if positions(data+1)-positions(data)<distance
+    distance=positions(data+1)-positions(data);
+  end
 end
 distance
 %ptimize filter window size
@@ -47,14 +50,14 @@ QRdistance=QRdistance+1;
 end
 WinSize=2*distance-QRdistance; 9
 % Filter - second pass
-filtered2=ecgdemowinmax(corrected, WinSize);
-peaks2=filtered2;
+  filtered2=ecgdemowinmax(corrected, WinSize);
+    peaks2=filtered2;
 for data=1:1:length(peaks2)
-if peaks2(data)<4
-peaks2(data)=0;
-else
-peaks2(data)=1;
-end
+  if peaks2(data)<4
+    peaks2(data)=0;
+  else
+    peaks2(data)=1;
+  end
 end
 positions2=find(peaks2);
 distanceBetweenFirstAndLastPeaks = positions2(length(positions2))-positions2(1);
@@ -62,6 +65,7 @@ averageDistanceBetweenPeaks = distanceBetweenFirstAndLastPeaks/length(positions2
 averageHeartRate = 60 * samplingrate/averageDistanceBetweenPeaks;
 disp('Average Heart Rate = ');
 disp(averageHeartRate);
+
 % Create figure - stages of processing
 figure(demo); set(demo, 'Name', strcat(plotname, ' - Processing Stages'));
 % Original input ECG data
